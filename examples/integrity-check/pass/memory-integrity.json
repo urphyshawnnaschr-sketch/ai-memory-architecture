@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "core_memory": {
+    "path": "memory-core.md",
+    "max_bytes": 5000
+  },
+  "authorities": [
+    {
+      "domain": "project-alpha",
+      "path": "worklog.md"
+    }
+  ],
+  "bookmarks": [
+    {
+      "path": "bookmark.md",
+      "target_domain": "project-alpha",
+      "target_path": "worklog.md"
+    }
+  ],
+  "references": [
+    {
+      "source": "memory-core.md",
+      "target": "worklog.md"
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "deployment-mode",
+      "status": "resolved"
+    }
+  ]
+}

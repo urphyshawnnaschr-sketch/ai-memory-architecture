@@ -1,0 +1,40 @@
+name: memory-integrity
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Verify passing fixture
+        run: python tools/memory_integrity_check.py examples/integrity-check/pass/memory-integrity.json
+
+      - name: Verify failing fixture is rejected
+        shell: bash
+        run: |
+          set +e
+          output="$(python tools/memory_integrity_check.py examples/integrity-check/fail/memory-integrity.json)"
+          status=$?
+          set -e
+          echo "$output"
+          test "$status" -eq 1
+          grep -q "OVERSIZED_CORE_MEMORY" <<< "$output"
+          grep -q "DUPLICATE_AUTHORITY_DOMAIN" <<< "$output"
+          grep -q "ORPHAN_BOOKMARK" <<< "$output"
+          grep -q "STALE_REFERENCE" <<< "$output"
+          grep -q "UNRESOLVED_CONTRADICTION" <<< "$output"

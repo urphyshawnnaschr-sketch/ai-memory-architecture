@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "core_memory": {
+    "path": "memory-core.md",
+    "max_bytes": 40
+  },
+  "authorities": [
+    {
+      "domain": "project-alpha",
+      "path": "worklog.md"
+    },
+    {
+      "domain": "project-alpha",
+      "path": "duplicate-worklog.md"
+    }
+  ],
+  "bookmarks": [
+    {
+      "path": "bookmark.md",
+      "target_domain": "missing-project",
+      "target_path": "missing-worklog.md"
+    }
+  ],
+  "references": [
+    {
+      "source": "memory-core.md",
+      "target": "missing-worklog.md"
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "deployment-mode",
+      "status": "unresolved"
+    }
+  ]
+}
