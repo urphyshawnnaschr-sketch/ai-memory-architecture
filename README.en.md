@@ -77,6 +77,20 @@ The project now includes two additional pieces that test whether the governance 
 
 The Cline adapter deliberately keeps `projectBrief.md` and `progress.md` as separate authority domains and does not mislabel Cline's richer `activeContext.md` as this project's pointer-only Session Bookmark.
 
+## Model-facing recovery evaluation
+
+The repository also includes [Authoritative-State Recovery Evaluation V0.1](docs/09-authoritative-state-recovery-eval.md), a provider-neutral 8-task evaluation that renders the same conflicting project documents under governed and ungoverned conditions.
+
+An initial **ChatGPT-authenticated Codex CLI pilot** was executed on 2026-08-29 with `gpt-5.6-sol`, `medium` reasoning, 16 independent ephemeral executions, no retries, and the pre-declared deterministic scorer.
+
+- Governed: **31 / 32 (96.875%)**
+- Ungoverned: **24 / 32 (75.0%)**
+- Difference: **+7 points (+21.875 percentage points)**
+
+The most informative part of the result was evidence hygiene: the governed condition gained **+3 safe-evidence-selection points** and **+3 stale/non-authoritative-path-identification points**. The remaining +1 came from V0.1's deliberately strict exact-text state metric, so this pilot should **not** be presented as a universal 21.875% improvement in semantic model performance.
+
+This is one synthetic pilot on one model/configuration, not a statistically general result. The run identity, per-case scores, scorer caveat, limitations, and evidence-audit notes are published in [Codex CLI Recovery Pilot — 2026-08-29](eval/results/codex-cli-2026-08-29/README.md).
+
 ## Reusable templates
 
 The repository currently includes:
