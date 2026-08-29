@@ -1,12 +1,14 @@
 # AI Memory Architecture
 
-> A practical, tool-agnostic methodology for managing long-running AI collaboration without turning memory into an uncontrolled pile of context.
+> A practical, tool-agnostic methodology and governance layer for keeping long-running AI context coherent, portable, and auditable.
 
 **Chinese documentation:** [README.md](README.md)
 
 ## What this project is
 
-AI Memory Architecture is an open methodology and reusable template set for organizing persistent context across AI assistants and coding agents. It is intentionally **not a platform, agent framework, or enterprise operating system**. The project focuses on a narrower problem: keeping long-running AI work understandable, portable, and maintainable.
+AI Memory Architecture is an open methodology, reusable template set, and small deterministic checker for organizing persistent context across AI assistants and coding agents.
+
+It is intentionally **not a memory database, retrieval engine, agent runtime, or enterprise AI operating system**. The project focuses on a narrower problem: once memory exists, how do you keep active project state internally consistent?
 
 It was derived from sustained real-world use of AI assistants across multiple projects and tools.
 
@@ -18,9 +20,22 @@ Long-running AI work tends to fail in predictable ways:
 - stale notes compete with newer decisions;
 - several projects leak context into one another;
 - progress is duplicated in multiple places and becomes inconsistent;
+- a checkpoint quietly turns into a second source of truth;
 - switching AI tools means rebuilding context from scratch.
 
-This repository treats those as information-architecture problems rather than model-capability problems.
+This repository treats those as **memory-governance and information-architecture problems**, not merely storage or retrieval problems.
+
+## Where this fits
+
+There are already strong open-source memory systems: Mem0, Letta/MemGPT, LangMem, Basic Memory, Cline/Roo memory-bank patterns, Graphiti/Zep, MemoryWiki, and other Markdown-based cross-agent memory projects.
+
+This project does **not** claim to have invented persistent memory, Markdown memory banks, Git-tracked context, or cross-agent handoff.
+
+Its narrower thesis is:
+
+> Storage answers **where memory lives**. Retrieval answers **which memory to fetch**. AI Memory Architecture asks **which state is authoritative and whether the memory structure is internally consistent**.
+
+See [Prior Art and Project Positioning](docs/07-prior-art-and-positioning.md) for the detailed comparison.
 
 ## Five core principles
 
@@ -29,6 +44,29 @@ This repository treats those as information-architecture problems rather than mo
 3. **Codename-triggered routing** — use a lightweight trigger table to select the relevant context domain.
 4. **Linked checkpoints** — session bookmarks should point back to authoritative worklogs instead of duplicating them.
 5. **Periodic pruning** — stale memory must be reviewed and removed before it becomes contradictory context.
+
+## Deterministic structural checks
+
+Memory Integrity Check V1 turns part of the methodology into machine-checkable invariants.
+
+It currently checks for:
+
+- duplicate authority domains;
+- authority paths reused across domains;
+- missing authority/core/bookmark/reference files;
+- orphan or mismatched bookmarks;
+- duplicate bookmarks;
+- stale references;
+- unresolved or duplicate contradiction IDs;
+- oversized core memory;
+- path aliases and project-root escapes;
+- unknown manifest fields.
+
+The checker is local, deterministic, uses only the Python standard library, and does not send memory contents to an external model.
+
+- [Memory Integrity Check V1](docs/06-memory-integrity-check.md)
+- [Manifest JSON Schema](spec/memory-integrity-manifest-v1.schema.json)
+- [Reproducible pass/fail fixtures](examples/integrity-check/README.md)
 
 ## Reusable templates
 
@@ -43,32 +81,38 @@ The repository currently includes:
 
 ## Tool support
 
-The method is vendor-neutral. It can be adapted to AI coding tools that can read/write local files, project-oriented assistants with limited persistent memory, or plain chat systems where the user manually supplies a compact memory summary.
+The method is vendor-neutral. It can be adapted to:
+
+- file-capable coding agents that can maintain the structure automatically;
+- project/workspace assistants with limited persistent memory;
+- stateless chat systems where the user manually supplies a compact memory summary.
 
 The repository currently documents examples for tools including ChatGPT, Claude, Cursor, Windsurf, Gemini, DeepSeek, Kimi, and similar assistants. Tool names are examples, not dependencies.
 
 ## Scope and non-goals
 
-This project is about **memory and context management methodology**.
+This project is about **memory governance and context integrity**.
 
 It does not claim to provide:
 
+- a general-purpose memory backend;
+- vector or graph retrieval;
 - a complete multi-agent runtime;
 - autonomous agent orchestration;
 - an enterprise AI operating system;
-- a proprietary memory backend;
+- semantic truth detection;
 - a benchmark proving one model is superior to another.
 
-Keeping this scope explicit makes the methodology easier to inspect, reuse, and challenge.
+Keeping this scope explicit makes the project easier to inspect, reuse, combine with other memory systems, and challenge.
 
 ## Contributing
 
 Contributions are welcome, especially:
 
 - English translation and terminology review;
-- adaptations for additional AI tools;
+- adapters for existing memory layouts;
 - reproducible examples showing context-conflict failure modes;
-- improvements to templates and memory-health checks;
+- improvements to structural-integrity checks;
 - field reports describing what did or did not work.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [ROADMAP.md](ROADMAP.md).
