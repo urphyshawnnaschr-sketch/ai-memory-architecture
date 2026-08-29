@@ -35,6 +35,18 @@ jobs:
           test "$(find "$tmp/prompts" -maxdepth 1 -name '*.txt' | wc -l)" -eq 16
           test -f "$tmp/prompts/manifest.json"
 
+      - name: Dry-run OpenAI recovery pilot without credentials
+        shell: bash
+        run: |
+          tmp="$(mktemp -d)"
+          out="$tmp/pilot"
+          python tools/openai_recovery_pilot.py --dry-run --limit 2 --output-dir "$out"
+          test -f "$out/run.json"
+          test -f "$out/summary.json"
+          test "$(find "$out" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 2
+          grep -q '"api_key_persisted": false' "$out/run.json"
+          grep -q '"complete_full_pilot": false' "$out/summary.json"
+
       - name: Verify passing fixture
         run: python tools/memory_integrity_check.py examples/integrity-check/pass/memory-integrity.json
 
