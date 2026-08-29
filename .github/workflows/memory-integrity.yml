@@ -24,6 +24,17 @@ jobs:
       - name: Run governance benchmark
         run: python tools/run_governance_benchmark.py
 
+      - name: Self-test authoritative-state recovery evaluation
+        run: python tools/recovery_eval.py selftest
+
+      - name: Generate governed and ungoverned recovery prompts
+        shell: bash
+        run: |
+          tmp="$(mktemp -d)"
+          python tools/recovery_eval.py bundle "$tmp/prompts"
+          test "$(find "$tmp/prompts" -maxdepth 1 -name '*.txt' | wc -l)" -eq 16
+          test -f "$tmp/prompts/manifest.json"
+
       - name: Verify passing fixture
         run: python tools/memory_integrity_check.py examples/integrity-check/pass/memory-integrity.json
 
