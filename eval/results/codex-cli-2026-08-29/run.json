@@ -1,0 +1,19 @@
+{
+  "format_version": 1,
+  "pilot_type": "ChatGPT-authenticated Codex CLI pilot",
+  "evaluation": "authoritative-state-recovery-v0.1",
+  "repository_head": "54f017bd0060074cf3b8331a9737bc7b8b2cb293",
+  "corpus_sha256": "d540524fb5c1e95a94889b45b87f9715ea8f98e3ccae6e96948a3debc967f80d",
+  "model": "gpt-5.6-sol",
+  "reasoning_effort": "medium",
+  "reasoning_summaries": "auto",
+  "codex_version": "codex-cli 0.150.0-alpha.12.2",
+  "authentication_status": "",
+  "cli_ephemeral": true,
+  "cli_resume_used": false,
+  "sandbox": "read-only",
+  "prompt_count": 16,
+  "started_at": "2026-08-29T04:29:59.0357767+00:00",
+  "openai_api_key_inherited": false,
+  "orchestration_retry_count": 0
+}
