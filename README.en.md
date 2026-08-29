@@ -68,6 +68,15 @@ The checker is local, deterministic, uses only the Python standard library, and 
 - [Manifest JSON Schema](spec/memory-integrity-manifest-v1.schema.json)
 - [Reproducible pass/fail fixtures](examples/integrity-check/README.md)
 
+## Benchmark and interoperability
+
+The project now includes two additional pieces that test whether the governance layer is more than a repository-specific convention:
+
+- [Memory Governance Benchmark V0.1](benchmarks/governance-v0.1/README.md) — 16 synthetic, deterministic cases covering every current finding code plus invalid-manifest behavior. It is a structural regression benchmark, not an LLM leaderboard.
+- [Cline Memory Bank Governance Adapter](docs/08-cline-memory-bank-adapter.md) — generates the same governance manifest on top of Cline's existing six-file Memory Bank layout without replacing Cline's storage model.
+
+The Cline adapter deliberately keeps `projectBrief.md` and `progress.md` as separate authority domains and does not mislabel Cline's richer `activeContext.md` as this project's pointer-only Session Bookmark.
+
 ## Reusable templates
 
 The repository currently includes:
