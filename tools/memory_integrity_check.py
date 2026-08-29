@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic integrity checks for AI Memory Architecture manifests."""
+"""Deterministic structural-governance checks for AI Memory Architecture manifests."""
 
 from __future__ import annotations
 
@@ -24,6 +24,12 @@ class ManifestError(ValueError):
     pass
 
 
+def _reject_unknown_keys(data: dict[str, Any], allowed: set[str], label: str) -> None:
+    unknown = sorted(set(data) - allowed)
+    if unknown:
+        raise ManifestError(f"{label} contains unknown field(s): {', '.join(unknown)}")
+
+
 def _load_manifest(path: Path) -> dict[str, Any]:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -33,12 +39,17 @@ def _load_manifest(path: Path) -> dict[str, Any]:
         raise ManifestError(f"invalid JSON: {exc}") from exc
     if not isinstance(data, dict):
         raise ManifestError("manifest root must be a JSON object")
+    _reject_unknown_keys(
+        data,
+        {"version", "core_memory", "authorities", "bookmarks", "references", "contradictions"},
+        "manifest",
+    )
     if data.get("version") != 1:
         raise ManifestError("manifest version must be 1")
     return data
 
 
-def _safe_path(root: Path, raw: Any, label: str) -> Path:
+def _safe_path(root: Path, raw: Any, label: str) -> tuple[Path, str]:
     if not isinstance(raw, str) or not raw.strip():
         raise ManifestError(f"{label} must be a non-empty relative path")
     candidate = Path(raw)
@@ -47,10 +58,13 @@ def _safe_path(root: Path, raw: Any, label: str) -> Path:
     resolved = (root / candidate).resolve()
     root_resolved = root.resolve()
     try:
-        resolved.relative_to(root_resolved)
+        relative = resolved.relative_to(root_resolved)
     except ValueError as exc:
         raise ManifestError(f"{label} escapes project root: {raw}") from exc
-    return resolved
+    normalized = relative.as_posix()
+    if normalized == ".":
+        raise ManifestError(f"{label} must point to a file path: {raw}")
+    return resolved, normalized
 
 
 def _require_list(data: dict[str, Any], key: str) -> list[Any]:
@@ -58,6 +72,13 @@ def _require_list(data: dict[str, Any], key: str) -> list[Any]:
     if not isinstance(value, list):
         raise ManifestError(f"{key} must be a list")
     return value
+
+
+def _required_text(item: dict[str, Any], key: str, label: str) -> str:
+    value = item.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise ManifestError(f"{label}.{key} must be a non-empty string")
+    return value.strip()
 
 
 def check_manifest(manifest_path: Path) -> list[Finding]:
@@ -69,9 +90,10 @@ def check_manifest(manifest_path: Path) -> list[Finding]:
     if core is not None:
         if not isinstance(core, dict):
             raise ManifestError("core_memory must be an object")
-        core_path = _safe_path(root, core.get("path"), "core_memory.path")
+        _reject_unknown_keys(core, {"path", "max_bytes"}, "core_memory")
+        core_path, _ = _safe_path(root, core.get("path"), "core_memory.path")
         max_bytes = core.get("max_bytes", 5000)
-        if not isinstance(max_bytes, int) or max_bytes <= 0:
+        if not isinstance(max_bytes, int) or isinstance(max_bytes, bool) or max_bytes <= 0:
             raise ManifestError("core_memory.max_bytes must be a positive integer")
         if not core_path.is_file():
             findings.append(Finding("MISSING_CORE_MEMORY", str(core.get("path"))))
@@ -88,58 +110,64 @@ def check_manifest(manifest_path: Path) -> list[Finding]:
     authority_paths: dict[str, str] = {}
 
     for index, item in enumerate(authorities):
+        label = f"authorities[{index}]"
         if not isinstance(item, dict):
-            raise ManifestError(f"authorities[{index}] must be an object")
-        domain = item.get("domain")
+            raise ManifestError(f"{label} must be an object")
+        _reject_unknown_keys(item, {"domain", "path"}, label)
+        domain = _required_text(item, "domain", label)
         raw_path = item.get("path")
-        if not isinstance(domain, str) or not domain.strip():
-            raise ManifestError(f"authorities[{index}].domain must be a non-empty string")
-        authority_path = _safe_path(root, raw_path, f"authorities[{index}].path")
+        authority_path, normalized_path = _safe_path(root, raw_path, f"{label}.path")
         if domain in authority_by_domain:
             findings.append(Finding("DUPLICATE_AUTHORITY_DOMAIN", domain))
         else:
-            authority_by_domain[domain] = str(raw_path)
-        if str(raw_path) in authority_paths and authority_paths[str(raw_path)] != domain:
+            authority_by_domain[domain] = normalized_path
+        if normalized_path in authority_paths and authority_paths[normalized_path] != domain:
             findings.append(
                 Finding(
                     "AUTHORITY_PATH_REUSED",
-                    f"{raw_path} is assigned to both {authority_paths[str(raw_path)]} and {domain}",
+                    f"{normalized_path} is assigned to both {authority_paths[normalized_path]} and {domain}",
                 )
             )
         else:
-            authority_paths[str(raw_path)] = domain
+            authority_paths[normalized_path] = domain
         if not authority_path.is_file():
             findings.append(Finding("MISSING_AUTHORITY_FILE", str(raw_path)))
 
     bookmarks = _require_list(data, "bookmarks")
+    bookmark_paths: set[str] = set()
     for index, item in enumerate(bookmarks):
+        label = f"bookmarks[{index}]"
         if not isinstance(item, dict):
-            raise ManifestError(f"bookmarks[{index}] must be an object")
-        bookmark_path = _safe_path(root, item.get("path"), f"bookmarks[{index}].path")
+            raise ManifestError(f"{label} must be an object")
+        _reject_unknown_keys(item, {"path", "target_domain", "target_path"}, label)
+        bookmark_path, normalized_bookmark = _safe_path(root, item.get("path"), f"{label}.path")
+        if normalized_bookmark in bookmark_paths:
+            findings.append(Finding("DUPLICATE_BOOKMARK", normalized_bookmark))
+        else:
+            bookmark_paths.add(normalized_bookmark)
         if not bookmark_path.is_file():
             findings.append(Finding("MISSING_BOOKMARK_FILE", str(item.get("path"))))
-        target_domain = item.get("target_domain")
-        target_path = item.get("target_path")
-        if not isinstance(target_domain, str) or not target_domain.strip():
-            raise ManifestError(f"bookmarks[{index}].target_domain must be a non-empty string")
-        _safe_path(root, target_path, f"bookmarks[{index}].target_path")
+        target_domain = _required_text(item, "target_domain", label)
+        _, normalized_target = _safe_path(root, item.get("target_path"), f"{label}.target_path")
         authority_path = authority_by_domain.get(target_domain)
         if authority_path is None:
             findings.append(Finding("ORPHAN_BOOKMARK", f"{item.get('path')} -> {target_domain}"))
-        elif authority_path != target_path:
+        elif authority_path != normalized_target:
             findings.append(
                 Finding(
                     "BOOKMARK_TARGET_MISMATCH",
-                    f"{item.get('path')} targets {target_path}; authority for {target_domain} is {authority_path}",
+                    f"{item.get('path')} targets {normalized_target}; authority for {target_domain} is {authority_path}",
                 )
             )
 
     references = _require_list(data, "references")
     for index, item in enumerate(references):
+        label = f"references[{index}]"
         if not isinstance(item, dict):
-            raise ManifestError(f"references[{index}] must be an object")
-        source = _safe_path(root, item.get("source"), f"references[{index}].source")
-        target = _safe_path(root, item.get("target"), f"references[{index}].target")
+            raise ManifestError(f"{label} must be an object")
+        _reject_unknown_keys(item, {"source", "target"}, label)
+        source, _ = _safe_path(root, item.get("source"), f"{label}.source")
+        target, _ = _safe_path(root, item.get("target"), f"{label}.target")
         if not source.is_file():
             findings.append(Finding("MISSING_REFERENCE_SOURCE", str(item.get("source"))))
         if not target.is_file():
@@ -148,17 +176,20 @@ def check_manifest(manifest_path: Path) -> list[Finding]:
             )
 
     contradictions = _require_list(data, "contradictions")
+    contradiction_ids: set[str] = set()
     for index, item in enumerate(contradictions):
+        label = f"contradictions[{index}]"
         if not isinstance(item, dict):
-            raise ManifestError(f"contradictions[{index}] must be an object")
-        contradiction_id = item.get("id")
+            raise ManifestError(f"{label} must be an object")
+        _reject_unknown_keys(item, {"id", "status"}, label)
+        contradiction_id = _required_text(item, "id", label)
         status = item.get("status")
-        if not isinstance(contradiction_id, str) or not contradiction_id.strip():
-            raise ManifestError(f"contradictions[{index}].id must be a non-empty string")
         if status not in {"resolved", "unresolved"}:
-            raise ManifestError(
-                f"contradictions[{index}].status must be 'resolved' or 'unresolved'"
-            )
+            raise ManifestError(f"{label}.status must be 'resolved' or 'unresolved'")
+        if contradiction_id in contradiction_ids:
+            findings.append(Finding("DUPLICATE_CONTRADICTION_ID", contradiction_id))
+        else:
+            contradiction_ids.add(contradiction_id)
         if status == "unresolved":
             findings.append(Finding("UNRESOLVED_CONTRADICTION", contradiction_id))
 
