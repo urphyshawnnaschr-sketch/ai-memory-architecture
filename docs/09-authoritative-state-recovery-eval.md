@@ -127,11 +127,13 @@ A real model-facing result should not be published until the run records at leas
 
 The same model should be tested on both conditions before interpreting the governance effect.
 
+The corpus and scorer remain provider-neutral. An optional first provider-specific execution adapter is documented in [OpenAI Recovery Pilot Runner V0.1](10-openai-recovery-pilot.md). Adding a runner does not change the task corpus, scoring rules, or publication standard.
+
 ## Non-goals
 
 V0.1 does not:
 
-- call any model provider automatically;
+- require any specific model provider in the corpus or scorer;
 - rank model vendors;
 - claim semantic truth detection;
 - prove production safety;
