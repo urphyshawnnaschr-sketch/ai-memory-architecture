@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "name": "Memory Governance Benchmark V0.1",
+  "description": "Synthetic structural-governance cases for deterministic regression testing. This suite does not measure LLM reasoning or semantic truth detection.",
+  "cases": [
+    {
+      "id": "clean_baseline",
+      "description": "One authority, one linked bookmark, fresh reference, resolved contradiction.",
+      "files": {
+        "memory-core.md": "# Core\n",
+        "worklog.md": "# Worklog\n",
+        "bookmark.md": "# Bookmark\n"
+      },
+      "manifest": {
+        "version": 1,
+        "core_memory": {"path": "memory-core.md", "max_bytes": 5000},
+        "authorities": [{"domain": "project", "path": "worklog.md"}],
+        "bookmarks": [{"path": "bookmark.md", "target_domain": "project", "target_path": "worklog.md"}],
+        "references": [{"source": "memory-core.md", "target": "worklog.md"}],
+        "contradictions": [{"id": "decision", "status": "resolved"}]
+      },
+      "expect": {"kind": "findings", "codes": []}
+    },
+    {
+      "id": "missing_core_memory",
+      "description": "The declared always-loaded core file is absent.",
+      "files": {},
+      "manifest": {"version": 1, "core_memory": {"path": "memory-core.md", "max_bytes": 5000}},
+      "expect": {"kind": "findings", "codes": ["MISSING_CORE_MEMORY"]}
+    },
+    {
+      "id": "oversized_core_memory",
+      "description": "Core memory exceeds its declared byte budget.",
+      "files": {"memory-core.md": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"},
+      "manifest": {"version": 1, "core_memory": {"path": "memory-core.md", "max_bytes": 16}},
+      "expect": {"kind": "findings", "codes": ["OVERSIZED_CORE_MEMORY"]}
+    },
+    {
+      "id": "duplicate_authority_domain",
+      "description": "Two files claim authority for the same state domain.",
+      "files": {"worklog-a.md": "a", "worklog-b.md": "b"},
+      "manifest": {
+        "version": 1,
+        "authorities": [
+          {"domain": "project", "path": "worklog-a.md"},
+          {"domain": "project", "path": "worklog-b.md"}
+        ]
+      },
+      "expect": {"kind": "findings", "codes": ["DUPLICATE_AUTHORITY_DOMAIN"]}
+    },
+    {
+      "id": "authority_path_alias_reuse",
+      "description": "The same physical file is assigned to two domains through equivalent path spellings.",
+      "files": {"worklog.md": "state"},
+      "manifest": {
+        "version": 1,
+        "authorities": [
+          {"domain": "project-a", "path": "worklog.md"},
+          {"domain": "project-b", "path": "./worklog.md"}
+        ]
+      },
+      "expect": {"kind": "findings", "codes": ["AUTHORITY_PATH_REUSED"]}
+    },
+    {
+      "id": "missing_authority_file",
+      "description": "An authority is declared but its file no longer exists.",
+      "files": {},
+      "manifest": {"version": 1, "authorities": [{"domain": "project", "path": "worklog.md"}]},
+      "expect": {"kind": "findings", "codes": ["MISSING_AUTHORITY_FILE"]}
+    },
+    {
+      "id": "missing_bookmark_file",
+      "description": "A declared checkpoint file is absent while its authority still exists.",
+      "files": {"worklog.md": "state"},
+      "manifest": {
+        "version": 1,
+        "authorities": [{"domain": "project", "path": "worklog.md"}],
+        "bookmarks": [{"path": "bookmark.md", "target_domain": "project", "target_path": "worklog.md"}]
+      },
+      "expect": {"kind": "findings", "codes": ["MISSING_BOOKMARK_FILE"]}
+    },
+    {
+      "id": "orphan_bookmark",
+      "description": "A bookmark points to a domain that has no declared authority.",
+      "files": {"bookmark.md": "resume"},
+      "manifest": {
+        "version": 1,
+        "bookmarks": [{"path": "bookmark.md", "target_domain": "missing-project", "target_path": "worklog.md"}]
+      },
+      "expect": {"kind": "findings", "codes": ["ORPHAN_BOOKMARK"]}
+    },
+    {
+      "id": "bookmark_target_mismatch",
+      "description": "A bookmark points to a different path from the domain's authority.",
+      "files": {"bookmark.md": "resume", "worklog.md": "state", "old-worklog.md": "old"},
+      "manifest": {
+        "version": 1,
+        "authorities": [{"domain": "project", "path": "worklog.md"}],
+        "bookmarks": [{"path": "bookmark.md", "target_domain": "project", "target_path": "old-worklog.md"}]
+      },
+      "expect": {"kind": "findings", "codes": ["BOOKMARK_TARGET_MISMATCH"]}
+    },
+    {
+      "id": "duplicate_bookmark_alias",
+      "description": "The same checkpoint is declared twice through path aliases.",
+      "files": {"bookmark.md": "resume", "worklog.md": "state"},
+      "manifest": {
+        "version": 1,
+        "authorities": [{"domain": "project", "path": "worklog.md"}],
+        "bookmarks": [
+          {"path": "bookmark.md", "target_domain": "project", "target_path": "worklog.md"},
+          {"path": "./bookmark.md", "target_domain": "project", "target_path": "./worklog.md"}
+        ]
+      },
+      "expect": {"kind": "findings", "codes": ["DUPLICATE_BOOKMARK"]}
+    },
+    {
+      "id": "missing_reference_source",
+      "description": "A dependency edge originates from a file that disappeared.",
+      "files": {"target.md": "target"},
+      "manifest": {"version": 1, "references": [{"source": "source.md", "target": "target.md"}]},
+      "expect": {"kind": "findings", "codes": ["MISSING_REFERENCE_SOURCE"]}
+    },
+    {
+      "id": "stale_reference",
+      "description": "A dependency edge points to a file that disappeared.",
+      "files": {"source.md": "source"},
+      "manifest": {"version": 1, "references": [{"source": "source.md", "target": "target.md"}]},
+      "expect": {"kind": "findings", "codes": ["STALE_REFERENCE"]}
+    },
+    {
+      "id": "unresolved_contradiction",
+      "description": "An explicitly tracked state conflict remains unresolved.",
+      "files": {},
+      "manifest": {"version": 1, "contradictions": [{"id": "deployment-mode", "status": "unresolved"}]},
+      "expect": {"kind": "findings", "codes": ["UNRESOLVED_CONTRADICTION"]}
+    },
+    {
+      "id": "duplicate_contradiction_id",
+      "description": "The same conflict identity is declared twice.",
+      "files": {},
+      "manifest": {
+        "version": 1,
+        "contradictions": [
+          {"id": "deployment-mode", "status": "resolved"},
+          {"id": "deployment-mode", "status": "resolved"}
+        ]
+      },
+      "expect": {"kind": "findings", "codes": ["DUPLICATE_CONTRADICTION_ID"]}
+    },
+    {
+      "id": "path_escape_rejected",
+      "description": "A manifest path attempts to escape the project root.",
+      "files": {},
+      "manifest": {"version": 1, "core_memory": {"path": "../outside.md", "max_bytes": 5000}},
+      "expect": {"kind": "manifest_error", "contains": "escapes project root"}
+    },
+    {
+      "id": "unknown_field_rejected",
+      "description": "An unsupported governance claim is not silently ignored.",
+      "files": {},
+      "manifest": {"version": 1, "semantic_truth": true},
+      "expect": {"kind": "manifest_error", "contains": "unknown field"}
+    }
+  ]
+}
