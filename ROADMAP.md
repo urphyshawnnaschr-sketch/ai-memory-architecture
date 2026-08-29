@@ -23,6 +23,8 @@ Add small, public examples for common failure modes:
 
 Each example should include the initial state, failure mode, corrective pattern, and expected result.
 
+**Progress:** the first passing and deliberately failing fixtures are implemented under `examples/integrity-check/` as part of Memory Integrity Check V1. More single-failure examples can be added independently.
+
 ### 3. Memory integrity checks
 
 Turn the existing health-check ideas into explicit, reviewable checks such as:
@@ -33,7 +35,9 @@ Turn the existing health-check ideas into explicit, reviewable checks such as:
 - oversized core-memory warnings;
 - unresolved contradiction review.
 
-The first version may remain human-readable and tool-agnostic. Automation should only be added where it improves reproducibility without turning the repository into a full agent platform.
+**Progress:** V1 is implemented as a deterministic, standard-library Python checker with unit tests and CI. See `docs/06-memory-integrity-check.md`.
+
+Future versions should keep automation narrow and reproducible rather than turning the repository into a full agent platform.
 
 ## Medium term
 
