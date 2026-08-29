@@ -11,7 +11,7 @@ The underlying documents and deterministic scorer are unchanged.
 
 ## What this runner does
 
-For a full run, the runner makes 16 independent API requests (8 tasks x 2 conditions). It saves evidence locally for every case:
+For a full run, the runner makes 16 independent API requests (8 tasks x 2 conditions). It saves evidence for every case:
 
 - exact rendered prompt;
 - request payload (never the API key);
@@ -34,13 +34,15 @@ It also records:
 
 ## Security and evidence hygiene
 
-Set the API key only through the environment:
+The API key must be provided only through `OPENAI_API_KEY`.
+
+Local shell example:
 
 ```bash
 export OPENAI_API_KEY="..."
 ```
 
-On PowerShell:
+PowerShell:
 
 ```powershell
 $env:OPENAI_API_KEY = "..."
@@ -68,7 +70,7 @@ python tools/openai_recovery_pilot.py --dry-run --limit 2
 
 A limited run is never marked as a complete pilot.
 
-## Full OpenAI pilot
+## Full OpenAI pilot — local execution
 
 Current default model in the runner:
 
@@ -90,6 +92,31 @@ python tools/openai_recovery_pilot.py --model <model-id>
 
 The model identifier is recorded in the run evidence. A published result must always state the exact model used.
 
+## Full OpenAI pilot — manual GitHub Actions execution
+
+The repository also provides a separate workflow:
+
+```text
+openai-recovery-pilot
+```
+
+It is **manual only** (`workflow_dispatch`). Normal pushes and pull requests do not start paid API calls.
+
+To use it:
+
+1. Configure the repository Actions secret named `OPENAI_API_KEY`.
+2. Open GitHub Actions and select `openai-recovery-pilot`.
+3. Choose **Run workflow**.
+4. Confirm the exact model and reasoning effort.
+5. Explicitly enable the paid-run confirmation checkbox.
+6. After completion, download the `openai-recovery-pilot-<run-id>` artifact and inspect `summary.json` plus per-case evidence.
+
+The workflow refuses to run the pilot job unless the explicit paid-run confirmation is true. It also checks that the repository secret exists before invoking the runner.
+
+Evidence is uploaded even when the runner reports an API or invalid-output failure, so a failed attempt is not silently lost. The artifact is retained for 14 days by default.
+
+Because the corpus is synthetic/public, the workflow does not require private customer or personal memory. Do not modify it to place private memory, credentials, or customer data into evaluation artifacts.
+
 ## No hidden retries
 
 V0.1 deliberately performs **no automatic retry**.
@@ -108,7 +135,7 @@ This keeps V0.1 scoring deterministic.
 
 ## Result layout
 
-Default path:
+Default local path:
 
 ```text
 eval-runs/openai/<timestamp>_<model>_seed<seed>/
@@ -120,6 +147,8 @@ Top-level files:
 - `summary.json` — aggregate scores and all case records.
 
 Each case directory contains the prompt, request, raw response (when available), model output, and score.
+
+The manual GitHub Actions path writes the same evidence layout into the uploaded artifact.
 
 ## Interpretation boundary
 
@@ -138,6 +167,6 @@ Issue #6 remains the authority for the model-facing research question and public
 
 ## CI boundary
 
-Public GitHub Actions should only exercise `--dry-run` and unit tests.
+Normal public CI exercises only `--dry-run` and unit tests.
 
-The repository does not require, expect, or read an OpenAI API key in normal CI. A paid model pilot is an explicit maintainer action, not an automatic pull-request side effect.
+The separate credentialed workflow is manual-only and requires both a repository secret and an explicit paid-run confirmation. A model pilot is therefore a deliberate maintainer action, not an automatic pull-request side effect.
