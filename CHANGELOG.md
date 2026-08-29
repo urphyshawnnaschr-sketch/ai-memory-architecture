@@ -1,14 +1,45 @@
 # Changelog
 
-## [Unreleased] — 2026-08-28
+## [Unreleased]
 
-### Public maintenance refresh
+---
+
+## [0.3.0] — 2026-08-28
+
+### Memory governance and structural integrity
+
+This release turns the repository from a documentation-only methodology into a small, testable memory-governance layer while keeping the original tool-agnostic scope.
+
+#### Public OSS maintenance surface
 
 - Added `README.en.md` as an English entry point for international reviewers and contributors.
 - Added `CONTRIBUTING.md` with contribution scope, validation expectations, and privacy guardrails.
-- Added `ROADMAP.md` with near-term documentation, reproducible-example, integrity-check, and evaluation goals.
-- Connected the Chinese README to the new English, contribution, and roadmap entry points.
-- Reaffirmed the repository scope as a memory/context-management methodology and template project, not a general-purpose agent platform or enterprise AI operating system.
+- Added `ROADMAP.md` with public maintenance goals and explicit non-goals.
+- Added a prior-art comparison that acknowledges existing memory systems and narrows this project's role to authority, governance, and structural integrity rather than storage or retrieval.
+
+#### Memory Integrity Check V1
+
+- Added a deterministic, standard-library Python checker for explicit memory/project-state relationships.
+- Added checks for duplicate authority domains, authority-path reuse, missing files, orphan or mismatched bookmarks, stale references, unresolved contradictions, duplicate bookmark/contradiction identities, oversized core memory, path aliases, project-root escapes, and unknown manifest fields.
+- Added a machine-readable JSON Schema for `memory-integrity.json`.
+- Added public passing and deliberately failing fixtures.
+
+#### Benchmark and interoperability
+
+- Added Memory Governance Benchmark V0.1 with 16 isolated synthetic cases covering every current finding code plus invalid-manifest behavior.
+- Added a benchmark runner that compares exact observed findings with declared expected results.
+- Added the first external memory-layout adapter for Cline Memory Bank.
+- The Cline adapter maps `projectBrief.md` to project-scope authority and `progress.md` to project-progress authority without misrepresenting Cline's richer `activeContext.md` semantics.
+
+#### Tests and CI
+
+- Expanded unit coverage to 13 tests.
+- GitHub Actions now runs unit tests, the 16-case governance benchmark, PASS/FAIL fixtures, and a Cline Memory Bank adapter smoke test.
+- A CI-only import-path failure in the benchmark CLI was discovered during development and fixed before release.
+
+### Scope retained
+
+This release does **not** add a memory database, vector/graph retrieval engine, MCP server, semantic truth detector, hosted memory service, or general-purpose agent runtime.
 
 ---
 
