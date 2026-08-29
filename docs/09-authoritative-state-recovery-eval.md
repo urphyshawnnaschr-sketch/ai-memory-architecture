@@ -7,7 +7,7 @@ It is separate from Memory Governance Benchmark V0.1:
 - **Governance Benchmark V0.1** tests deterministic checker behavior against known structural failures.
 - **Recovery Evaluation V0.1** prepares controlled prompts for an AI model and measures whether it recovers the currently authoritative state from conflicting project context.
 
-No model results are included yet. This repository does not claim an improvement until a reproducible pilot run is completed and published.
+The first audited model-facing result is now published separately as [Codex CLI Recovery Pilot — 2026-08-29](../eval/results/codex-cli-2026-08-29/README.md). The evaluation definition and V0.1 scoring rules remain unchanged after observing that result.
 
 ## Research question
 
@@ -128,6 +128,18 @@ A real model-facing result should not be published until the run records at leas
 The same model should be tested on both conditions before interpreting the governance effect.
 
 The corpus and scorer remain provider-neutral. An optional first provider-specific execution adapter is documented in [OpenAI Recovery Pilot Runner V0.1](10-openai-recovery-pilot.md). Adding a runner does not change the task corpus, scoring rules, or publication standard.
+
+## Published pilot
+
+The first published pilot used a ChatGPT-authenticated Codex CLI session rather than the Responses API. It ran all 16 task-condition executions independently with ephemeral sessions and no orchestration retries.
+
+Its deterministic V0.1 result was:
+
+- governed: `31 / 32`;
+- ungoverned: `24 / 32`;
+- difference: `+7` points.
+
+The detailed result report explicitly separates the strict exact-text `state_accuracy` effect from the stronger observed differences in safe evidence selection and stale/non-authoritative path identification. See [Codex CLI Recovery Pilot — 2026-08-29](../eval/results/codex-cli-2026-08-29/README.md).
 
 ## Non-goals
 
