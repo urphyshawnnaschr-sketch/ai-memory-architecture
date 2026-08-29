@@ -1,0 +1,107 @@
+name: openai-recovery-pilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "Exact OpenAI model ID to evaluate"
+        required: true
+        default: "gpt-5.6-sol"
+        type: string
+      reasoning_effort:
+        description: "Reasoning effort used for every case"
+        required: true
+        default: "medium"
+        type: choice
+        options:
+          - none
+          - low
+          - medium
+          - high
+          - xhigh
+          - max
+      confirm_paid_run:
+        description: "I understand this makes 16 paid API requests using the repository OPENAI_API_KEY secret"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openai-recovery-pilot
+  cancel-in-progress: false
+
+jobs:
+  pilot:
+    if: ${{ inputs.confirm_paid_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      PILOT_OUTPUT_DIR: ${{ runner.temp }}/openai-recovery-pilot
+      PILOT_EXIT_FILE: ${{ runner.temp }}/openai-recovery-pilot-exit-code.txt
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify API secret is configured
+        shell: bash
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::Repository secret OPENAI_API_KEY is not configured."
+            exit 2
+          fi
+
+      - name: Record manual run intent
+        shell: bash
+        run: |
+          echo "Model: ${{ inputs.model }}"
+          echo "Reasoning effort: ${{ inputs.reasoning_effort }}"
+          echo "Evaluation: authoritative-state-recovery-v0.1"
+          echo "Cases: 16 independent requests"
+          echo "Automatic retries: disabled"
+
+      - name: Run credentialed recovery pilot
+        shell: bash
+        run: |
+          set +e
+          python tools/openai_recovery_pilot.py \
+            --model "${{ inputs.model }}" \
+            --reasoning-effort "${{ inputs.reasoning_effort }}" \
+            --output-dir "$PILOT_OUTPUT_DIR"
+          status=$?
+          set -e
+          printf '%s\n' "$status" > "$PILOT_EXIT_FILE"
+          echo "Pilot runner exit code: $status"
+
+      - name: Upload complete or partial evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openai-recovery-pilot-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/openai-recovery-pilot
+            ${{ runner.temp }}/openai-recovery-pilot-exit-code.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Preserve pilot failure status after artifact upload
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$PILOT_EXIT_FILE" ]; then
+            echo "::error::Pilot did not reach the runner step."
+            exit 2
+          fi
+          status="$(cat "$PILOT_EXIT_FILE")"
+          if [ "$status" -ne 0 ]; then
+            echo "::error::Pilot runner completed with exit code $status. Review the uploaded evidence artifact; do not hide or overwrite the failed run."
+            exit "$status"
+          fi
