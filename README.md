@@ -3,7 +3,7 @@
 > **A battle-tested methodology for managing AI memory.**
 > Works with ChatGPT, Claude, Cursor, Windsurf, Gemini, DeepSeek, Kimi — no coding required.
 >
-> *Language: Chinese (中文). Contributions welcome for English translation.*
+> 🌍 **English overview:** [README.en.md](README.en.md) · 🤝 [Contributing](CONTRIBUTING.md) · 🗺️ [Roadmap](ROADMAP.md)
 
 **让 AI 真正记住你——一套经过实战验证的个人 AI 记忆管理方法论**
 
@@ -179,6 +179,8 @@ ChatGPT 的记忆是 AI 自动决定记什么，你很难控制。时间长了�
 - 💬 **分享经验**：提 Issue 聊聊你的 AI 记忆管理踩坑故事
 - 📄 **补模板**：为其他 AI 工具写适配指南
 - 🐛 **纠错**：发现不对的地方，直接提 PR
+
+详细贡献规则见 [CONTRIBUTING.md](CONTRIBUTING.md)，后续公开维护方向见 [ROADMAP.md](ROADMAP.md)。
 
 如果这个项目对你有帮助，给个 ⭐ 就是最大的支持。
 
