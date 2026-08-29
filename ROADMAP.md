@@ -1,6 +1,6 @@
 # Roadmap
 
-This roadmap describes the next public maintenance steps for AI Memory Architecture. It is intentionally focused on the repository's core scope: practical memory and context management for long-running AI work.
+This roadmap describes the next public maintenance steps for AI Memory Architecture. It is intentionally focused on the repository's core scope: practical memory governance and context integrity for long-running AI work.
 
 ## Near term
 
@@ -23,7 +23,7 @@ Add small, public examples for common failure modes:
 
 Each example should include the initial state, failure mode, corrective pattern, and expected result.
 
-**Progress:** the first passing and deliberately failing fixtures are implemented under `examples/integrity-check/` as part of Memory Integrity Check V1. More single-failure examples can be added independently.
+**Progress:** pass/fail fixtures exist under `examples/integrity-check/`, and Memory Governance Benchmark V0.1 adds 16 isolated synthetic cases covering every current finding code plus invalid-manifest behavior.
 
 ### 3. Memory integrity checks
 
@@ -35,33 +35,38 @@ Turn the existing health-check ideas into explicit, reviewable checks such as:
 - oversized core-memory warnings;
 - unresolved contradiction review.
 
-**Progress:** V1 is implemented as a deterministic, standard-library Python checker with unit tests and CI. See `docs/06-memory-integrity-check.md`.
+**Progress:** V1 is implemented as a deterministic, standard-library Python checker with unit tests, CI, a JSON Schema, and a structural regression benchmark. See `docs/06-memory-integrity-check.md` and `benchmarks/governance-v0.1/`.
 
 Future versions should keep automation narrow and reproducible rather than turning the repository into a full agent platform.
 
 ## Medium term
 
-### 4. Tool adaptation notes
+### 4. Memory-layout adapters
 
-Document how the same methodology maps onto several classes of AI tools:
+Demonstrate that the governance contract can sit on top of existing memory systems instead of requiring a new storage backend.
 
-- file-capable coding agents;
-- project/workspace assistants;
-- chat assistants with built-in memory;
-- stateless chat systems.
+- publish conservative adapters for file-based memory layouts;
+- keep source-system semantics explicit rather than forcing every file into AI Memory Architecture roles;
+- document which authority assignments are source-system facts and which are governance-overlay choices.
 
-These are adaptations of one methodology, not separate product-specific forks.
+**Progress:** the first adapter targets Cline Memory Bank. It maps `projectBrief.md` to project-scope authority and `progress.md` to project-progress authority while leaving Cline's richer `activeContext.md` semantics intact.
 
 ### 5. Evaluation protocol
 
-Define a lightweight evaluation protocol for questions such as:
+Define evaluation layers separately so deterministic structural checks are not confused with model behavior.
+
+Current layer:
+
+- Can explicit governance invariants be checked reproducibly against known-good and known-bad structures?
+
+Future model-facing layer:
 
 - Can a fresh session recover the current project state from the documented memory structure?
 - Can it distinguish authoritative state from a historical checkpoint?
 - Can it avoid loading unrelated project context?
-- Can a user identify and remove stale information without reconstructing the entire history?
+- Can it identify stale information without reconstructing the entire history?
 
-The goal is reproducibility and falsifiability, not model rankings.
+The goal is reproducibility and falsifiability, not model rankings. Model-facing evaluations must be reported separately from the deterministic benchmark because they introduce non-determinism.
 
 ## Community goals
 
@@ -72,4 +77,4 @@ The goal is reproducibility and falsifiability, not model rankings.
 
 ## Non-goals
 
-The roadmap does not include building a general-purpose multi-agent runtime, enterprise AI operating system, proprietary hosted memory service, or autonomous orchestration framework. Those remain outside this repository's scope.
+The roadmap does not include building a general-purpose multi-agent runtime, enterprise AI operating system, proprietary hosted memory service, autonomous orchestration framework, or another general-purpose memory database. Those remain outside this repository's scope.
