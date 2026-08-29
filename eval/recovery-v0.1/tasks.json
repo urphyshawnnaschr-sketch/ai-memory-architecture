@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "name": "Authoritative-State Recovery Evaluation V0.1",
+  "description": "Synthetic model-facing tasks for comparing state recovery with and without an explicit memory-governance contract.",
+  "tasks": [
+    {
+      "id": "stale_bookmark_after_plan_change",
+      "question": "What is the current implementation plan?",
+      "documents": {
+        "worklog.md": "# Project Worklog\nCurrent state: Implement Plan C using the new queue-based design.\nDecision: Plan B was superseded after load testing.\n",
+        "bookmark.md": "# Session Bookmark\nResume Plan B implementation and finish the polling worker.\n",
+        "notes/load-test.md": "# Load Test Notes\nPolling showed unacceptable contention. The team discussed replacing Plan B.\n"
+      },
+      "governance": {
+        "domain": "project-progress",
+        "authority_path": "worklog.md",
+        "non_authoritative_paths": ["bookmark.md", "notes/load-test.md"]
+      },
+      "ground_truth": {
+        "current_state": "Implement Plan C using the new queue-based design.",
+        "authority_path": "worklog.md",
+        "stale_or_non_authoritative_paths": ["bookmark.md", "notes/load-test.md"]
+      }
+    },
+    {
+      "id": "historical_progress_copy",
+      "question": "What is the current project status?",
+      "documents": {
+        "progress.md": "# Progress\nCurrent state: API migration complete; integration testing is in progress.\n",
+        "archive/progress-2026-07.md": "# Progress Snapshot\nCurrent state: API migration is blocked on schema design.\n",
+        "meeting-notes.md": "# Meeting Notes\nThe schema blocker was discussed last month.\n"
+      },
+      "governance": {
+        "domain": "project-progress",
+        "authority_path": "progress.md",
+        "non_authoritative_paths": ["archive/progress-2026-07.md", "meeting-notes.md"]
+      },
+      "ground_truth": {
+        "current_state": "API migration complete; integration testing is in progress.",
+        "authority_path": "progress.md",
+        "stale_or_non_authoritative_paths": ["archive/progress-2026-07.md", "meeting-notes.md"]
+      }
+    },
+    {
+      "id": "cross_project_leakage",
+      "question": "What should Project B work on next?",
+      "documents": {
+        "project-b/worklog.md": "# Project B Worklog\nCurrent state: Validate the offline export flow before adding sync.\n",
+        "project-a/worklog.md": "# Project A Worklog\nCurrent state: Add real-time synchronization and conflict resolution.\n",
+        "shared-notes.md": "# Shared Notes\nBoth projects discuss synchronization, but their rollout order differs.\n"
+      },
+      "governance": {
+        "domain": "project-b-progress",
+        "authority_path": "project-b/worklog.md",
+        "non_authoritative_paths": ["project-a/worklog.md", "shared-notes.md"]
+      },
+      "ground_truth": {
+        "current_state": "Validate the offline export flow before adding sync.",
+        "authority_path": "project-b/worklog.md",
+        "stale_or_non_authoritative_paths": ["project-a/worklog.md", "shared-notes.md"]
+      }
+    },
+    {
+      "id": "superseded_architecture_decision",
+      "question": "Which database is the project currently using?",
+      "documents": {
+        "worklog.md": "# Worklog\nCurrent state: PostgreSQL is the active persistence layer.\nDecision history: SQLite was replaced after concurrency testing.\n",
+        "decisions/001-sqlite.md": "# ADR 001\nDecision: Use SQLite for the first implementation.\n",
+        "test-report.md": "# Concurrency Test\nSQLite locking became a bottleneck under concurrent writes.\n"
+      },
+      "governance": {
+        "domain": "project-progress",
+        "authority_path": "worklog.md",
+        "non_authoritative_paths": ["decisions/001-sqlite.md", "test-report.md"]
+      },
+      "ground_truth": {
+        "current_state": "PostgreSQL is the active persistence layer.",
+        "authority_path": "worklog.md",
+        "stale_or_non_authoritative_paths": ["decisions/001-sqlite.md", "test-report.md"]
+      }
+    },
+    {
+      "id": "checkpoint_became_second_status",
+      "question": "What is the current release state?",
+      "documents": {
+        "worklog.md": "# Worklog\nCurrent state: Release candidate passed regression tests and is ready for packaging.\n",
+        "checkpoint.md": "# Checkpoint\nCurrent state: Release candidate still needs regression testing.\n",
+        "qa-notes.md": "# QA Notes\nRegression run completed successfully.\n"
+      },
+      "governance": {
+        "domain": "release-progress",
+        "authority_path": "worklog.md",
+        "non_authoritative_paths": ["checkpoint.md", "qa-notes.md"]
+      },
+      "ground_truth": {
+        "current_state": "Release candidate passed regression tests and is ready for packaging.",
+        "authority_path": "worklog.md",
+        "stale_or_non_authoritative_paths": ["checkpoint.md", "qa-notes.md"]
+      }
+    },
+    {
+      "id": "old_handoff_after_scope_reduction",
+      "question": "What is the current delivery scope?",
+      "documents": {
+        "projectBrief.md": "# Project Brief\nCurrent state: Deliver read-only reporting; write controls are explicitly out of scope.\n",
+        "handoff.md": "# Old Handoff\nCurrent state: Build reporting plus write controls in the next iteration.\n",
+        "discussion.md": "# Discussion\nThe team considered write controls before reducing scope.\n"
+      },
+      "governance": {
+        "domain": "project-scope",
+        "authority_path": "projectBrief.md",
+        "non_authoritative_paths": ["handoff.md", "discussion.md"]
+      },
+      "ground_truth": {
+        "current_state": "Deliver read-only reporting; write controls are explicitly out of scope.",
+        "authority_path": "projectBrief.md",
+        "stale_or_non_authoritative_paths": ["handoff.md", "discussion.md"]
+      }
+    },
+    {
+      "id": "completed_blocker_still_in_notes",
+      "question": "What is blocking the project now?",
+      "documents": {
+        "worklog.md": "# Worklog\nCurrent state: No active blocker; credential rotation is complete and deployment validation can proceed.\n",
+        "risk-notes.md": "# Risk Notes\nCurrent state: Credential rotation blocks deployment.\n",
+        "ops-log.md": "# Ops Log\nCredential rotation completed successfully.\n"
+      },
+      "governance": {
+        "domain": "project-progress",
+        "authority_path": "worklog.md",
+        "non_authoritative_paths": ["risk-notes.md", "ops-log.md"]
+      },
+      "ground_truth": {
+        "current_state": "No active blocker; credential rotation is complete and deployment validation can proceed.",
+        "authority_path": "worklog.md",
+        "stale_or_non_authoritative_paths": ["risk-notes.md", "ops-log.md"]
+      }
+    },
+    {
+      "id": "archived_migration_plan",
+      "question": "What migration strategy is currently approved?",
+      "documents": {
+        "worklog.md": "# Worklog\nCurrent state: Use a staged migration with dual-read verification before cutover.\n",
+        "archive/big-bang-plan.md": "# Original Migration Plan\nCurrent state: Perform a single big-bang cutover over the weekend.\n",
+        "review-notes.md": "# Review Notes\nThe original cutover plan was considered too risky.\n"
+      },
+      "governance": {
+        "domain": "migration-progress",
+        "authority_path": "worklog.md",
+        "non_authoritative_paths": ["archive/big-bang-plan.md", "review-notes.md"]
+      },
+      "ground_truth": {
+        "current_state": "Use a staged migration with dual-read verification before cutover.",
+        "authority_path": "worklog.md",
+        "stale_or_non_authoritative_paths": ["archive/big-bang-plan.md", "review-notes.md"]
+      }
+    }
+  ]
+}
