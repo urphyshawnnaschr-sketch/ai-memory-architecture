@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/urphyshawnnaschr-sketch/ai-memory-architecture/spec/memory-integrity-manifest-v1.schema.json",
+  "title": "AI Memory Architecture - Memory Integrity Manifest V1",
+  "description": "Portable structural-governance contract for explicit AI memory/project-state relationships.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version"],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "core_memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "max_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 5000
+        }
+      }
+    },
+    "authorities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["domain", "path"],
+        "properties": {
+          "domain": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "path": {
+            "$ref": "#/$defs/relativePath"
+          }
+        }
+      },
+      "default": []
+    },
+    "bookmarks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "target_domain", "target_path"],
+        "properties": {
+          "path": {
+            "$ref": "#/$defs/relativePath"
+          },
+          "target_domain": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "target_path": {
+            "$ref": "#/$defs/relativePath"
+          }
+        }
+      },
+      "default": []
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "target"],
+        "properties": {
+          "source": {
+            "$ref": "#/$defs/relativePath"
+          },
+          "target": {
+            "$ref": "#/$defs/relativePath"
+          }
+        }
+      },
+      "default": []
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status"],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "status": {
+            "enum": ["resolved", "unresolved"]
+          }
+        }
+      },
+      "default": []
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": ".*\\S.*"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:[\\\\/])(?![/\\\\]).*\\S.*$"
+    }
+  }
+}
