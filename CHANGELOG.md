@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased] — 2026-08-28
+
+### Public maintenance refresh
+
+- Added `README.en.md` as an English entry point for international reviewers and contributors.
+- Added `CONTRIBUTING.md` with contribution scope, validation expectations, and privacy guardrails.
+- Added `ROADMAP.md` with near-term documentation, reproducible-example, integrity-check, and evaluation goals.
+- Connected the Chinese README to the new English, contribution, and roadmap entry points.
+- Reaffirmed the repository scope as a memory/context-management methodology and template project, not a general-purpose agent platform or enterprise AI operating system.
+
+---
+
 ## [0.2.0] — 2026-05-17
 
 ### 🎯 主题：分级指南 + 暗号统一
